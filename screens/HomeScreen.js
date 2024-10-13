@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { Title, Card, Paragraph, Button } from 'react-native-paper';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { auth, firestore } from '../firebase/config';
 
 const HomeScreen = ({ navigation }) => {
   const [userName, setUserName] = useState('');
@@ -18,10 +18,19 @@ const HomeScreen = ({ navigation }) => {
 
   const loadUserData = async () => {
     try {
-      const storedName = await AsyncStorage.getItem('userName');
-      const storedPreferences = await AsyncStorage.getItem('userPreferences');
-      if (storedName) setUserName(storedName);
-      if (storedPreferences) setUserPreferences(JSON.parse(storedPreferences));
+      const user = auth.currentUser;
+      if (user) {
+        const doc = await firestore.collection('users').doc(user.uid).get();
+        if (doc.exists) {
+          const userData = doc.data();
+          setUserName(userData.name || 'User');
+          setUserPreferences(userData.preferences || {
+            allergies: [],
+            dietType: '',
+            calorieGoal: 0,
+          });
+        }
+      }
     } catch (error) {
       console.error('Error loading user data:', error);
     }
@@ -33,7 +42,7 @@ const HomeScreen = ({ navigation }) => {
 
   return (
     <ScrollView style={styles.container}>
-      <Title style={styles.title}>Welcome, {userName || 'User'}!</Title>
+      <Title style={styles.title}>Welcome, {userName}!</Title>
       
       <Card style={styles.card}>
         <Card.Content>

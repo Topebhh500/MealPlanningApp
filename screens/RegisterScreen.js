@@ -1,18 +1,33 @@
 // screens/RegisterScreen.js
 import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { TextInput, Button, Title } from 'react-native-paper';
+import { TextInput, Button, Title, Snackbar } from 'react-native-paper';
+import { auth, firestore } from '../firebase/config';
 
 const RegisterScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [visible, setVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
-  const handleRegister = () => {
-    // TODO: Implement Firebase registration
-    console.log('Register with:', name, email, password);
-    // For now, just navigate to the main app
-    navigation.replace('Main');
+  const handleRegister = async () => {
+    try {
+      const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+      await firestore.collection('users').doc(userCredential.user.uid).set({
+        name,
+        email,
+        preferences: {
+          allergies: [],
+          dietType: '',
+          calorieGoal: 2000,
+        }
+      });
+      navigation.replace('Main');
+    } catch (error) {
+      setSnackbarMessage(error.message);
+      setVisible(true);
+    }
   };
 
   return (
@@ -44,6 +59,13 @@ const RegisterScreen = ({ navigation }) => {
       <Button onPress={() => navigation.navigate('Login')}>
         Already have an account? Login
       </Button>
+      <Snackbar
+        visible={visible}
+        onDismiss={() => setVisible(false)}
+        duration={3000}
+      >
+        {snackbarMessage}
+      </Snackbar>
     </View>
   );
 };

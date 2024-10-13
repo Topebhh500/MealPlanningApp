@@ -1,8 +1,8 @@
 // screens/ProfileScreen.js
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
-import { Title, TextInput, Button, Chip } from 'react-native-paper';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Title, TextInput, Button, Chip, Snackbar } from 'react-native-paper';
+import { auth, firestore } from '../firebase/config';
 
 const ProfileScreen = () => {
   const [name, setName] = useState('');
@@ -10,6 +10,8 @@ const ProfileScreen = () => {
   const [newAllergy, setNewAllergy] = useState('');
   const [dietType, setDietType] = useState('');
   const [calorieGoal, setCalorieGoal] = useState('');
+  const [visible, setVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
   useEffect(() => {
     loadUserData();
@@ -17,32 +19,43 @@ const ProfileScreen = () => {
 
   const loadUserData = async () => {
     try {
-      const storedName = await AsyncStorage.getItem('userName');
-      const storedPreferences = await AsyncStorage.getItem('userPreferences');
-      if (storedName) setName(storedName);
-      if (storedPreferences) {
-        const preferences = JSON.parse(storedPreferences);
-        setAllergies(preferences.allergies || []);
-        setDietType(preferences.dietType || '');
-        setCalorieGoal(preferences.calorieGoal ? preferences.calorieGoal.toString() : '');
+      const user = auth.currentUser;
+      if (user) {
+        const doc = await firestore.collection('users').doc(user.uid).get();
+        if (doc.exists) {
+          const userData = doc.data();
+          setName(userData.name || '');
+          setAllergies(userData.preferences?.allergies || []);
+          setDietType(userData.preferences?.dietType || '');
+          setCalorieGoal(userData.preferences?.calorieGoal?.toString() || '');
+        }
       }
     } catch (error) {
       console.error('Error loading user data:', error);
+      setSnackbarMessage('Failed to load user data. Please try again.');
+      setVisible(true);
     }
   };
 
   const saveUserData = async () => {
     try {
-      await AsyncStorage.setItem('userName', name);
-      await AsyncStorage.setItem('userPreferences', JSON.stringify({
-        allergies,
-        dietType,
-        calorieGoal: parseInt(calorieGoal) || 0,
-      }));
-      alert('Profile updated successfully!');
+      const user = auth.currentUser;
+      if (user) {
+        await firestore.collection('users').doc(user.uid).update({
+          name,
+          preferences: {
+            allergies,
+            dietType,
+            calorieGoal: parseInt(calorieGoal) || 0,
+          }
+        });
+        setSnackbarMessage('Profile updated successfully!');
+        setVisible(true);
+      }
     } catch (error) {
       console.error('Error saving user data:', error);
-      alert('Failed to update profile. Please try again.');
+      setSnackbarMessage('Failed to update profile. Please try again.');
+      setVisible(true);
     }
   };
 
@@ -56,6 +69,7 @@ const ProfileScreen = () => {
   const removeAllergy = (allergy) => {
     setAllergies(allergies.filter(a => a !== allergy));
   };
+  
 
   return (
     <ScrollView style={styles.container}>
@@ -102,6 +116,14 @@ const ProfileScreen = () => {
       <Button mode="contained" onPress={saveUserData} style={styles.button}>
         Save Profile
       </Button>
+
+      <Snackbar
+        visible={visible}
+        onDismiss={() => setVisible(false)}
+        duration={3000}
+      >
+        {snackbarMessage}
+      </Snackbar>
     </ScrollView>
   );
 };
