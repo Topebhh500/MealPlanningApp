@@ -1,4 +1,3 @@
-// App.js
 import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -18,6 +17,7 @@ import ProfileScreen from './screens/ProfileScreen';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
+// Main tab navigator for authenticated users
 function MainTabs() {
   return (
     <Tab.Navigator
@@ -37,6 +37,8 @@ function MainTabs() {
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
+        tabBarActiveTintColor: 'purple',
+        tabBarInactiveTintColor: 'gray',
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
@@ -52,13 +54,14 @@ export default function App() {
   const [user, setUser] = useState(null);
 
   function onAuthStateChanged(user) {
+    console.log('User state changed:', user);
     setUser(user);
     if (initializing) setInitializing(false);
   }
 
   useEffect(() => {
     const subscriber = auth.onAuthStateChanged(onAuthStateChanged);
-    return subscriber; // unsubscribe on unmount
+    return subscriber; // Unsubscribe on unmount
   }, []);
 
   if (initializing) return null;
@@ -66,16 +69,22 @@ export default function App() {
   return (
     <PaperProvider>
       <NavigationContainer>
-        <Stack.Navigator>
-          {user ? (
-            <Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
-          ) : (
-            <>
-              <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
-              <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
-            </>
-          )}
-        </Stack.Navigator>
+        {user ? (
+          // Stack navigator for authenticated users
+          <Stack.Navigator>
+            <Stack.Screen 
+              name="Main" 
+              component={MainTabs} 
+              options={{ headerShown: false }} 
+            />
+          </Stack.Navigator>
+        ) : (
+          // Stack navigator for unauthenticated users (login flow)
+          <Stack.Navigator>
+            <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="Register" component={RegisterScreen} />
+          </Stack.Navigator>
+        )}
       </NavigationContainer>
     </PaperProvider>
   );

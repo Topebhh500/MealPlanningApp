@@ -1,16 +1,16 @@
-// screens/HomeScreen.js
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
-import { Title, Card, Paragraph, Button } from 'react-native-paper';
+import { Title, Card, Paragraph, Button, Avatar } from 'react-native-paper';
 import { auth, firestore } from '../firebase/config';
 
 const HomeScreen = ({ navigation }) => {
   const [userName, setUserName] = useState('');
   const [userPreferences, setUserPreferences] = useState({
     allergies: [],
-    dietType: '',
+    dietaryPreferences: [],
     calorieGoal: 0,
   });
+  const [profilePicture, setProfilePicture] = useState(null);
 
   useEffect(() => {
     loadUserData();
@@ -24,11 +24,12 @@ const HomeScreen = ({ navigation }) => {
         if (doc.exists) {
           const userData = doc.data();
           setUserName(userData.name || 'User');
-          setUserPreferences(userData.preferences || {
-            allergies: [],
-            dietType: '',
-            calorieGoal: 0,
+          setUserPreferences({
+            allergies: userData.allergies || [],
+            dietaryPreferences: userData.dietaryPreferences || [],
+            calorieGoal: userData.calorieGoal || 0,
           });
+          setProfilePicture(userData.profilePicture || null);
         }
       }
     } catch (error) {
@@ -42,14 +43,20 @@ const HomeScreen = ({ navigation }) => {
 
   return (
     <ScrollView style={styles.container}>
-      <Title style={styles.title}>Welcome, {userName}!</Title>
+      <View style={styles.header}>
+        <Avatar.Image 
+          size={50} 
+          source={profilePicture ? { uri: profilePicture } : require('../assets/default-avatar.jpg')} 
+        />
+        <Title style={styles.title}>{userName}!</Title>
+      </View>
       
       <Card style={styles.card}>
         <Card.Content>
           <Title>Your Health Profile</Title>
           <Paragraph>Allergies: {userPreferences.allergies.join(', ') || 'None set'}</Paragraph>
-          <Paragraph>Diet Type: {userPreferences.dietType || 'Not set'}</Paragraph>
-          <Paragraph>Daily Calorie Goal: {userPreferences.calorieGoal || 'Not set'}</Paragraph>
+          <Paragraph>Dietary Preferences: {userPreferences.dietaryPreferences.join(', ') || 'None set'}</Paragraph>
+          <Paragraph>Daily Calorie Target: {userPreferences.calorieGoal || 'Not set'}</Paragraph>
         </Card.Content>
         <Card.Actions>
           <Button onPress={handleUpdateProfile}>Update Profile</Button>
@@ -85,9 +92,14 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
   title: {
     fontSize: 24,
-    marginBottom: 20,
+    marginLeft: 20,
   },
   card: {
     marginBottom: 20,

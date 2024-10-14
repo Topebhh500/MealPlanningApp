@@ -1,7 +1,8 @@
 // firebase/config.js
-import firebase from 'firebase/compat/app';  // Correct import for Firebase JS SDK
-import 'firebase/compat/auth';               // Import Firebase Auth
-import 'firebase/compat/firestore';          // Import Firestore
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
+import 'firebase/compat/firestore';
+import 'firebase/compat/storage';  // Add this line
 
 // Your Firebase configuration
 const firebaseConfig = {
@@ -14,12 +15,13 @@ const firebaseConfig = {
   measurementId: "G-XEJ0MZ0TKW"
 };
 
-// Initialize Firebase only if it hasn't been initialized
+// Initialize Firebase
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 
-const auth = firebase.auth();  // <-- Use firebase.auth() function to get the auth instance
+const auth = firebase.auth();
 const firestore = firebase.firestore();
+const storage = firebase.storage();  // Add this line
 
-export { auth, firestore };
+export { auth, firestore, storage };  // Export storage
