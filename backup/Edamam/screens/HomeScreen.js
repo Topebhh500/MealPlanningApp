@@ -53,11 +53,9 @@ const HomeScreen = ({ navigation }) => {
     try {
       const user = auth.currentUser;
       if (user) {
-        // Load meal plan data
         const mealPlanDoc = await firestore.collection('mealPlans').doc(user.uid).get();
-        // Load shopping list data
         const shoppingListDoc = await firestore.collection('shoppingLists').doc(user.uid).get();
-
+        
         if (mealPlanDoc.exists) {
           const mealPlan = mealPlanDoc.data();
           const today = new Date().toISOString().split('T')[0];
@@ -68,11 +66,9 @@ const HomeScreen = ({ navigation }) => {
           const caloriesConsumed = Object.values(todaysMeals).reduce((sum, meal) => sum + (meal?.calories || 0), 0);
           const mealsPlanned = Object.values(todaysMeals).filter(meal => meal?.name).length;
 
-          // Check if shopping list exists and count total items to buy
           const shoppingList = shoppingListDoc.exists ? shoppingListDoc.data().items : [];
           const itemsToBuy = shoppingList.length;
 
-          // Update the summary state
           setTodaysSummary({ caloriesConsumed, mealsPlanned, itemsToBuy });
         }
       }
@@ -93,16 +89,14 @@ const HomeScreen = ({ navigation }) => {
         <List.Item
           title={`${type}: Not Planned`}
           description="No meal data available"
-          style={styles.mealItem}
         />
       );
     }
 
     return (
       <List.Item
-        title={`${type}: ${meal.name}`}
-        description={`Calories: ${meal.calories} | P: ${meal.protein}g | C: ${meal.carbs}g | F: ${meal.fat}g`}
-        style={styles.mealItem}
+        title={`${type}:`}
+        description={`${meal.name} - ${meal.calories} cal | P: ${meal.protein}g | C: ${meal.carbs}g | F: ${meal.fat}g`}
         right={() => <List.Icon icon="food" />}
         left={() => meal.image && (
           <Image source={{ uri: meal.image }} style={styles.mealThumb} />
@@ -114,7 +108,7 @@ const HomeScreen = ({ navigation }) => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6200ee" />
+        <ActivityIndicator size="large" />
       </View>
     );
   }
@@ -123,24 +117,18 @@ const HomeScreen = ({ navigation }) => {
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <Avatar.Image 
-          size={70} 
+          size={50} 
           source={profilePicture ? { uri: profilePicture } : require('../assets/default-avatar.jpg')} 
         />
-        <Title style={styles.title}>{userName}!</Title>
+        <Title style={styles.title}>Welcome, {userName}!</Title>
       </View>
       
       <Card style={styles.card}>
         <Card.Content>
-          <Title style={styles.cardTitle}>Your Health Profile</Title>
-          <Paragraph style={styles.profileText}>
-            Allergies: {userPreferences.allergies.join(', ') || 'None set'}
-          </Paragraph>
-          <Paragraph style={styles.profileText}>
-            Dietary Preferences: {userPreferences.dietaryPreferences.join(', ') || 'None set'}
-          </Paragraph>
-          <Paragraph style={styles.profileText}>
-            Daily Calorie Target: {userPreferences.calorieGoal || 'Not set'}
-          </Paragraph>
+          <Title>Your Health Profile</Title>
+          <Paragraph>Allergies: {userPreferences.allergies.join(', ') || 'None set'}</Paragraph>
+          <Paragraph>Dietary Preferences: {userPreferences.dietaryPreferences.join(', ') || 'None set'}</Paragraph>
+          <Paragraph>Daily Calorie Target: {userPreferences.calorieGoal || 'Not set'}</Paragraph>
         </Card.Content>
         <Card.Actions>
           <Button mode="contained" onPress={handleUpdateProfile}>Update Profile</Button>
@@ -149,7 +137,7 @@ const HomeScreen = ({ navigation }) => {
       
       <Card style={styles.card}>
         <Card.Content>
-          <Title style={styles.cardTitle}>Today's Meals</Title>
+          <Title>Today's Meals</Title>
           <List.Section>
             {renderMealItem(todaysMeals.breakfast, 'Breakfast')}
             {renderMealItem(todaysMeals.lunch, 'Lunch')}
@@ -162,22 +150,16 @@ const HomeScreen = ({ navigation }) => {
       </Card>
       
       <Card style={styles.card}>
-      <Card.Content>
-        <Title style={styles.cardTitle}>Today's Summary</Title>
-        <Paragraph style={styles.summaryText}>
-          Calories consumed: {todaysSummary.caloriesConsumed}
-        </Paragraph>
-        <Paragraph style={styles.summaryText}>
-          Meals planned: {todaysSummary.mealsPlanned}
-        </Paragraph>
-        <Paragraph style={styles.summaryText}>
-          Items to buy: {todaysSummary.itemsToBuy}
-        </Paragraph>
-      </Card.Content>
-      <Card.Actions>
-        <Button mode="contained" onPress={() => navigation.navigate('Shopping List')}>Shopping List</Button>
-      </Card.Actions>
-    </Card>
+        <Card.Content>
+          <Title>Today's Summary</Title>
+          <Paragraph>Calories consumed: {todaysSummary.caloriesConsumed}</Paragraph>
+          <Paragraph>Meals planned: {todaysSummary.mealsPlanned}</Paragraph>
+          <Paragraph>Items to buy: {todaysSummary.itemsToBuy}</Paragraph>
+        </Card.Content>
+        <Card.Actions>
+          <Button mode="contained" onPress={() => navigation.navigate('Shopping List')}>Shopping List</Button>
+        </Card.Actions>
+      </Card>
     </ScrollView>
   );
 };
@@ -186,13 +168,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f9f9f9', // Light background color
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f9f9f9', // Light background color
   },
   header: {
     flexDirection: 'row',
@@ -201,37 +181,15 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    marginLeft: 15,
-    color: '#333', // Darker color for better contrast
+    marginLeft: 20,
   },
   card: {
-    marginBottom: 20,
-    borderRadius: 10,
-    elevation: 3, // Slight shadow for depth
-  },
-  cardTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#6200ee', // Accent color for titles
-  },
-  profileText: {
-    fontSize: 14,
-    color: '#555', // Subtle text color
-  },
-  mealItem: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee', // Light separator line
+    marginBottom: 40,
   },
   mealThumb: {
     width: 60,
     height: 60,
     borderRadius: 30,
-  },
-  summaryText: {
-    fontSize: 16,
-    marginVertical: 5,
-    color: '#333', // Darker color for better contrast
   },
 });
 

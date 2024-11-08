@@ -175,7 +175,7 @@ const ShoppingListScreen = () => {
   const renderStockItem = (item, index) => (
     <List.Item
       key={index}
-      title={`${item.name} (${item.quantity})`}
+      title={`${item.name} (Quantity: ${item.quantity})`}
       right={() => (
         <View style={styles.iconContainer}>
           <IconButton
@@ -287,10 +287,6 @@ const styles = StyleSheet.create({
   iconContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  button: {
-    marginTop: 10,
-    marginBottom: 10,
   },
 });
 

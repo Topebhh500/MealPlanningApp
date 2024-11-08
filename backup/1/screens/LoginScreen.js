@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ImageBackground, Image } from 'react-native';
 import { TextInput, Button, Title, Snackbar } from 'react-native-paper';
-import { auth } from '../api/firebase';
+import { auth } from '../firebase/config';
 import * as LocalAuthentication from 'expo-local-authentication';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -81,7 +81,7 @@ const LoginScreen = ({ navigation }) => {
     >
       <View style={styles.container}>
         <Image 
-          source={require('../assets/background.jpg')} // Change to your logo image
+          source={require('../assets/background.jpg')}
           style={styles.image}
         />
         <Title style={styles.title}>Meal Planning Mate!</Title>
@@ -91,7 +91,6 @@ const LoginScreen = ({ navigation }) => {
           onChangeText={setEmail}
           style={styles.input}
           keyboardType="email-address"
-          mode="outlined"
         />
         <TextInput
           label="Password"
@@ -99,7 +98,6 @@ const LoginScreen = ({ navigation }) => {
           onChangeText={setPassword}
           secureTextEntry
           style={styles.input}
-          mode="outlined"
         />
         <Button mode="contained" onPress={handleLogin} style={styles.button}>
           Login
@@ -113,14 +111,13 @@ const LoginScreen = ({ navigation }) => {
             Login with Fingerprint
           </Button>
         )}
-        <Button onPress={() => navigation.navigate('Register')} style={styles.registerButton}>
+        <Button onPress={() => navigation.navigate('Register')}>
           Don't have an account? Register
         </Button>
         <Snackbar
           visible={visible}
           onDismiss={() => setVisible(false)}
           duration={3000}
-          style={styles.snackbar}
         >
           {snackbarMessage}
         </Snackbar>
@@ -138,15 +135,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)', // Slight transparency for container
-    borderRadius: 10,
-    margin: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     marginBottom: 20,
     textAlign: 'center',
-    color: '#333', // Darker color for better contrast
   },
   input: {
     marginBottom: 10,
@@ -155,19 +149,12 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 10,
   },
-  registerButton: {
-    marginTop: 10,
-    alignSelf: 'center',
-  },
   image: {
-    width: 120,
-    height: 120,
+    width: 150,
+    height: 150,
     alignSelf: 'center',
     marginBottom: 20,
-    borderRadius: 60, // Circular image
-  },
-  snackbar: {
-    backgroundColor: '#4caf50', // Green for success messages
+    borderRadius: 100,
   },
 });
 

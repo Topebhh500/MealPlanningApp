@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Alert, Dimensions } from 'react-native';
 import { Title, List, TextInput, Button, IconButton, Divider, Dialog, Portal } from 'react-native-paper';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
-import { firestore, auth } from '../api/firebase';
 
 const ShoppingListScreen = () => {
   const [shoppingList, setShoppingList] = useState([]);
@@ -18,61 +18,45 @@ const ShoppingListScreen = () => {
   ]);
 
   useEffect(() => {
-    loadShoppingListFromFirebase();
-    loadStockFromFirebase();
+    loadShoppingList();
+    loadStock();
   }, []);
 
-  const loadShoppingListFromFirebase = async () => {
+  const loadShoppingList = async () => {
     try {
-      const user = auth.currentUser;
-      if (user) {
-        const shoppingListSnapshot = await firestore.collection('shoppingLists').doc(user.uid).get();
-        if (shoppingListSnapshot.exists) {
-          setShoppingList(shoppingListSnapshot.data().items || []);
-        }
+      const storedList = await AsyncStorage.getItem('shoppingList');
+      if (storedList) {
+        setShoppingList(JSON.parse(storedList));
       }
     } catch (error) {
-      console.error('Error loading shopping list from Firebase:', error);
+      console.error('Error loading shopping list:', error);
     }
   };
 
-  const loadStockFromFirebase = async () => {
+  const loadStock = async () => {
     try {
-      const user = auth.currentUser;
-      if (user) {
-        const stockSnapshot = await firestore.collection('stocks').doc(user.uid).get();
-        if (stockSnapshot.exists) {
-          setStock(stockSnapshot.data().items || []);
-        }
+      const storedStock = await AsyncStorage.getItem('stock');
+      if (storedStock) {
+        setStock(JSON.parse(storedStock));
       }
     } catch (error) {
-      console.error('Error loading stock from Firebase:', error);
+      console.error('Error loading stock:', error);
     }
   };
 
-  const saveShoppingListToFirebase = async (shoppingList) => {
+  const saveShoppingList = async (list) => {
     try {
-      const user = auth.currentUser;
-      if (user) {
-        await firestore.collection('shoppingLists').doc(user.uid).set({
-          items: shoppingList,
-        });
-      }
+      await AsyncStorage.setItem('shoppingList', JSON.stringify(list));
     } catch (error) {
-      console.error('Error saving shopping list to Firebase:', error);
+      console.error('Error saving shopping list:', error);
     }
   };
 
-  const saveStockToFirebase = async (stockList) => {
+  const saveStock = async (stockList) => {
     try {
-      const user = auth.currentUser;
-      if (user) {
-        await firestore.collection('stocks').doc(user.uid).set({
-          items: stockList,
-        });
-      }
+      await AsyncStorage.setItem('stock', JSON.stringify(stockList));
     } catch (error) {
-      console.error('Error saving stock to Firebase:', error);
+      console.error('Error saving stock:', error);
     }
   };
 
@@ -80,10 +64,8 @@ const ShoppingListScreen = () => {
     if (newItem.trim()) {
       const updatedList = [...shoppingList, { name: newItem.trim(), checked: false }];
       setShoppingList(updatedList);
-      saveShoppingListToFirebase(updatedList);
+      saveShoppingList(updatedList);
       setNewItem('');
-    } else {
-      Alert.alert('Invalid Input', 'Item name cannot be empty.');
     }
   };
 
@@ -92,13 +74,13 @@ const ShoppingListScreen = () => {
       i === index ? { ...item, checked: !item.checked } : item
     );
     setShoppingList(updatedList);
-    saveShoppingListToFirebase(updatedList);
+    saveShoppingList(updatedList);
   };
 
   const removeItem = (index) => {
     const updatedList = shoppingList.filter((_, i) => i !== index);
     setShoppingList(updatedList);
-    saveShoppingListToFirebase(updatedList);
+    saveShoppingList(updatedList);
   };
 
   const moveToStock = (item) => {
@@ -108,8 +90,8 @@ const ShoppingListScreen = () => {
     setShoppingList(updatedShoppingList);
     setStock(updatedStock);
 
-    saveShoppingListToFirebase(updatedShoppingList);
-    saveStockToFirebase(updatedStock);
+    saveShoppingList(updatedShoppingList);
+    saveStock(updatedStock);
 
     Alert.alert('Item Moved', `${item.name} has been moved to Available Stocks.`);
   };
@@ -130,14 +112,14 @@ const ShoppingListScreen = () => {
       item === selectedItem ? { ...item, quantity: parseInt(editedQuantity) } : item
     );
     setStock(updatedStock);
-    saveStockToFirebase(updatedStock);
+    saveStock(updatedStock);
     hideEditDialog();
   };
 
   const removeStockItem = (item) => {
     const updatedStock = stock.filter((stockItem) => stockItem !== item);
     setStock(updatedStock);
-    saveStockToFirebase(updatedStock);
+    saveStock(updatedStock);
   };
 
   const renderShoppingListItem = (item, index) => (
@@ -155,7 +137,7 @@ const ShoppingListScreen = () => {
           <IconButton
             icon="check"
             onPress={() => {
-              moveToStock(item); // Move the item to Stock
+              moveToStock(item);
             }}
             accessibilityLabel="Move to Stock"
           />
@@ -175,7 +157,7 @@ const ShoppingListScreen = () => {
   const renderStockItem = (item, index) => (
     <List.Item
       key={index}
-      title={`${item.name} (${item.quantity})`}
+      title={`${item.name} (Quantity: ${item.quantity})`}
       right={() => (
         <View style={styles.iconContainer}>
           <IconButton
@@ -287,10 +269,6 @@ const styles = StyleSheet.create({
   iconContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  button: {
-    marginTop: 10,
-    marginBottom: 10,
   },
 });
 

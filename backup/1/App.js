@@ -4,7 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Provider as PaperProvider } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
-import { auth } from './api/firebase';
+import { auth } from './firebase/config';
 
 // Import screens
 import LoginScreen from './screens/LoginScreen';
@@ -12,7 +12,6 @@ import RegisterScreen from './screens/RegisterScreen';
 import HomeScreen from './screens/HomeScreen';
 import MealPlanScreen from './screens/MealPlanScreen';
 import ShoppingListScreen from './screens/ShoppingListScreen';
-import NearbyStoresScreen from './screens/NearbyStoresScreen';
 import ProfileScreen from './screens/ProfileScreen';
 
 const Stack = createStackNavigator();
@@ -32,22 +31,19 @@ function MainTabs() {
             iconName = focused ? 'restaurant' : 'restaurant-outline';
           } else if (route.name === 'Shopping List') {
             iconName = focused ? 'list' : 'list-outline';
-          } else if (route.name === 'Nearby Stores') {
-            iconName = focused ? 'map' : 'map-outline';
           } else if (route.name === 'Profile') {
             iconName = focused ? 'person' : 'person-outline';
           }
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#6200ea',
+        tabBarActiveTintColor: 'purple',
         tabBarInactiveTintColor: 'gray',
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Meal Plan" component={MealPlanScreen} />
       <Tab.Screen name="Shopping List" component={ShoppingListScreen} />
-      <Tab.Screen name="Nearby Stores" component={NearbyStoresScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
@@ -58,7 +54,7 @@ export default function App() {
   const [user, setUser] = useState(null);
 
   function onAuthStateChanged(user) {
-    //console.log('User state changed:', user);
+    console.log('User state changed:', user);
     setUser(user);
     if (initializing) setInitializing(false);
   }

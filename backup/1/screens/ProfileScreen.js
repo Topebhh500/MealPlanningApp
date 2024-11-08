@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { Title, TextInput, Button, Chip, Snackbar, Avatar, Switch } from 'react-native-paper';
-import { auth, firestore, storage } from '../api/firebase';
+import { auth, firestore, storage } from '../firebase/config';
 import * as ImagePicker from 'expo-image-picker';
 import * as LocalAuthentication from 'expo-local-authentication';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -134,9 +134,8 @@ const ProfileScreen = () => {
         <Avatar.Image 
           size={100} 
           source={profilePicture ? { uri: profilePicture } : require('../assets/default-avatar.jpg')} 
-          style={styles.avatar}
         />
-        <Button mode="outlined" onPress={pickImage} style={styles.uploadButton}>
+        <Button onPress={pickImage} style={styles.uploadButton}>
           Upload Picture
         </Button>
       </View>
@@ -190,7 +189,6 @@ const ProfileScreen = () => {
           <Switch
             value={fingerprintEnabled}
             onValueChange={toggleFingerprintLogin}
-            style={styles.switch}
           />
         </View>
       )}
@@ -207,7 +205,6 @@ const ProfileScreen = () => {
         visible={visible}
         onDismiss={() => setVisible(false)}
         duration={3000}
-        style={styles.snackbar}
       >
         {snackbarMessage}
       </Snackbar>
@@ -219,25 +216,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f9f9f9', // Light background color for the screen
   },
   title: {
     fontSize: 24,
     marginBottom: 20,
-    fontWeight: 'bold',
-    color: '#333', // Dark color for better contrast
   },
   subtitle: {
     fontSize: 18,
-    marginTop: 20,
+    marginTop: 10,
     marginBottom: 10,
-    color: '#555', // Medium color for subtitles
   },
   input: {
     marginBottom: 10,
-    backgroundColor: '#fff', // White background for inputs
-    borderRadius: 5,
-    elevation: 1, // Shadow effect for inputs
   },
   chipsContainer: {
     flexDirection: 'row',
@@ -246,43 +236,29 @@ const styles = StyleSheet.create({
   },
   chip: {
     margin: 4,
-    paddingHorizontal: 10, // More padding for chips
-    borderRadius: 20, // Rounded chips
   },
   button: {
     marginTop: 10,
   },
   buttonLogout: {
     marginTop: 10,
-    backgroundColor: '#e53935', // Red color for logout
-    marginBottom: 30
+    marginBottom: 40,
   },
   avatarContainer: {
     alignItems: 'center',
     marginBottom: 20,
   },
-  avatar: {
-    backgroundColor: '#ccc', // Light gray for default avatar
-    marginBottom: 10,
-  },
   uploadButton: {
-    width: '50%',
+    marginTop: 10,
   },
   settingContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 20,
-    marginBottom: 10,
+    alignItems: 'center',
+    marginVertical: 10,
   },
   settingTitle: {
     fontSize: 16,
-  },
-  switch: {
-    marginLeft: 10,
-  },
-  snackbar: {
-    backgroundColor: '#4caf50', // Green for success messages
   },
 });
 
