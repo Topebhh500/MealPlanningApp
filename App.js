@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Provider as PaperProvider } from 'react-native-paper';
-import { Ionicons } from '@expo/vector-icons';
-import { auth } from './api/firebase';
+import React, { useState, useEffect } from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Provider as PaperProvider } from "react-native-paper";
+import { Ionicons } from "@expo/vector-icons";
+import { auth } from "./api/firebase";
 
 // Import screens
-import LoginScreen from './screens/LoginScreen';
-import RegisterScreen from './screens/RegisterScreen';
-import HomeScreen from './screens/HomeScreen';
-import MealPlanScreen from './screens/MealPlanScreen';
-import ShoppingListScreen from './screens/ShoppingListScreen';
-import NearbyStoresScreen from './screens/NearbyStoresScreen';
-import ProfileScreen from './screens/ProfileScreen';
+import LoginScreen from "./screens/LoginScreen";
+import RegisterScreen from "./screens/RegisterScreen";
+import HomeScreen from "./screens/HomeScreen";
+import MealPlanScreen from "./screens/MealPlanScreen";
+import ShoppingListScreen from "./screens/ShoppingListScreen";
+import NearbyStoresScreen from "./screens/NearbyStoresScreen";
+import ProfileScreen from "./screens/ProfileScreen";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -26,22 +26,22 @@ function MainTabs() {
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
 
-          if (route.name === 'Home') {
-            iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'Meal Plan') {
-            iconName = focused ? 'restaurant' : 'restaurant-outline';
-          } else if (route.name === 'Shopping List') {
-            iconName = focused ? 'list' : 'list-outline';
-          } else if (route.name === 'Nearby Stores') {
-            iconName = focused ? 'map' : 'map-outline';
-          } else if (route.name === 'Profile') {
-            iconName = focused ? 'person' : 'person-outline';
+          if (route.name === "Home") {
+            iconName = focused ? "home" : "home-outline";
+          } else if (route.name === "Meal Plan") {
+            iconName = focused ? "restaurant" : "restaurant-outline";
+          } else if (route.name === "Shopping List") {
+            iconName = focused ? "list" : "list-outline";
+          } else if (route.name === "Nearby Stores") {
+            iconName = focused ? "map" : "map-outline";
+          } else if (route.name === "Profile") {
+            iconName = focused ? "person" : "person-outline";
           }
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#6200ea',
-        tabBarInactiveTintColor: 'gray',
+        tabBarActiveTintColor: "#6200ea",
+        tabBarInactiveTintColor: "gray",
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
@@ -76,16 +76,20 @@ export default function App() {
         {user ? (
           // Stack navigator for authenticated users
           <Stack.Navigator>
-            <Stack.Screen 
-              name="Main" 
-              component={MainTabs} 
-              options={{ headerShown: false }} 
+            <Stack.Screen
+              name="Main"
+              component={MainTabs}
+              options={{ headerShown: false }}
             />
           </Stack.Navigator>
         ) : (
           // Stack navigator for unauthenticated users (login flow)
           <Stack.Navigator>
-            <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+            <Stack.Screen
+              name="Login"
+              component={LoginScreen}
+              options={{ headerShown: false }}
+            />
             <Stack.Screen name="Register" component={RegisterScreen} />
           </Stack.Navigator>
         )}
