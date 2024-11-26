@@ -1,29 +1,56 @@
-import React, { useState, useEffect } from 'react';
-import { Text, View, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
-import { Title, Card, Paragraph, Button, Modal, Portal, List, IconButton, Checkbox, TextInput, RadioButton } from 'react-native-paper';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { searchRecipes } from '../api/edamam';
-import { auth, firestore } from '../api/firebase';
+import React, { useState, useEffect } from "react";
+import {
+  Text,
+  View,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+} from "react-native";
+import {
+  Title,
+  Card,
+  Paragraph,
+  Button,
+  Modal,
+  Portal,
+  List,
+  IconButton,
+  Checkbox,
+  TextInput,
+  RadioButton,
+  ActivityIndicator,
+} from "react-native-paper";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { searchRecipes } from "../api/edamam";
+import { auth, firestore } from "../api/firebase";
 
 const MealPlanScreen = () => {
   const [mealPlan, setMealPlan] = useState({});
-  const [selectedDate, setSelectedDate] = useState('');
-  const [isIngredientsModalVisible, setIsIngredientsModalVisible] = useState(false);
+  const [selectedDate, setSelectedDate] = useState("");
+  const [isIngredientsModalVisible, setIsIngredientsModalVisible] =
+    useState(false);
   const [selectedIngredients, setSelectedIngredients] = useState([]);
   const [shoppingList, setShoppingList] = useState([]);
   const [stock, setStock] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [mealTimes, setMealTimes] = useState({ breakfast: true, lunch: true, dinner: true });
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [mealTimes, setMealTimes] = useState({
+    breakfast: true,
+    lunch: true,
+    dinner: true,
+  });
   const [startDate, setStartDate] = useState(new Date());
   const [numberOfDays, setNumberOfDays] = useState(7);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
 
-  // State for copying meals and managing paste functionality
+  // State for copying meals
   const [copiedMeal, setCopiedMeal] = useState(null);
   const [copiedMealType, setCopiedMealType] = useState(null);
-  const [isPasteModalVisible, setIsPasteModalVisible] = useState(false); // Paste modal visibility
-  const [selectedPasteDate, setSelectedPasteDate] = useState(new Date()); // Date for pasting
-  const [selectedPasteMealTime, setSelectedPasteMealTime] = useState(''); // Meal time for pasting
+  const [isPasteModalVisible, setIsPasteModalVisible] = useState(false);
+  const [selectedPasteDate, setSelectedPasteDate] = useState(new Date());
+  const [selectedPasteMealTime, setSelectedPasteMealTime] = useState("");
 
   useEffect(() => {
     loadMealPlan();
@@ -35,7 +62,7 @@ const MealPlanScreen = () => {
     try {
       const user = auth.currentUser;
       if (user) {
-        const doc = await firestore.collection('mealPlans').doc(user.uid).get();
+        const doc = await firestore.collection("mealPlans").doc(user.uid).get();
         if (doc.exists) {
           const storedMealPlan = doc.data();
           setMealPlan(storedMealPlan);
@@ -43,21 +70,38 @@ const MealPlanScreen = () => {
         }
       }
     } catch (error) {
-      console.error('Error loading meal plan:', error);
+      console.error("Error loading meal plan:", error);
     }
+  };
+
+  const simulateProgress = () => {
+    setLoadingProgress(0);
+    const interval = setInterval(() => {
+      setLoadingProgress((prev) => {
+        if (prev >= 99) {
+          clearInterval(interval);
+          return 99;
+        }
+        return prev + Math.floor(Math.random() * 10) + 1;
+      });
+    }, 300);
+    return interval;
   };
 
   const loadShoppingList = async () => {
     try {
       const user = auth.currentUser;
       if (user) {
-        const snapshot = await firestore.collection('shoppingLists').doc(user.uid).get();
+        const snapshot = await firestore
+          .collection("shoppingLists")
+          .doc(user.uid)
+          .get();
         if (snapshot.exists) {
           setShoppingList(snapshot.data().items || []);
         }
       }
     } catch (error) {
-      console.error('Error loading shopping list:', error);
+      console.error("Error loading shopping list:", error);
     }
   };
 
@@ -65,25 +109,32 @@ const MealPlanScreen = () => {
     try {
       const user = auth.currentUser;
       if (user) {
-        const snapshot = await firestore.collection('stocks').doc(user.uid).get();
+        const snapshot = await firestore
+          .collection("stocks")
+          .doc(user.uid)
+          .get();
         if (snapshot.exists) {
           setStock(snapshot.data().items || []);
         }
       }
     } catch (error) {
-      console.error('Error loading stock:', error);
+      console.error("Error loading stock:", error);
     }
   };
 
   const getFormattedDate = (date) => {
-    const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-    return localDate.toISOString().split('T')[0];
+    const localDate = new Date(
+      date.getTime() - date.getTimezoneOffset() * 60000
+    );
+    return localDate.toISOString().split("T")[0];
   };
 
   const getDisplayDate = (dateString) => {
     const date = new Date(dateString);
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    return `${dayNames[date.getDay()]} ${date.getDate()}/${date.getMonth() + 1}`;
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    return `${dayNames[date.getDay()]} ${date.getDate()}/${
+      date.getMonth() + 1
+    }`;
   };
 
   const getDates = () => {
@@ -100,41 +151,60 @@ const MealPlanScreen = () => {
   const openGenerateMealPlanModal = () => setIsModalVisible(true);
 
   const handleGenerateMealPlan = async () => {
-    const newMealPlan = { ...mealPlan };
-    for (let i = 0; i < numberOfDays; i++) {
-      const currentDate = new Date(startDate);
-      currentDate.setDate(startDate.getDate() + i);
-      const dateString = getFormattedDate(currentDate);
+    setIsGenerating(true);
+    const progressInterval = simulateProgress();
 
-      if (!mealPlan[dateString]) {
-        newMealPlan[dateString] = {};
+    try {
+      const newMealPlan = { ...mealPlan };
+      for (let i = 0; i < numberOfDays; i++) {
+        const currentDate = new Date(startDate);
+        currentDate.setDate(startDate.getDate() + i);
+        const dateString = getFormattedDate(currentDate);
+
+        if (!mealPlan[dateString]) {
+          newMealPlan[dateString] = {};
+        }
+
+        if (mealTimes.breakfast) {
+          newMealPlan[dateString].breakfast = await getRandomMeal("breakfast");
+        }
+        if (mealTimes.lunch) {
+          newMealPlan[dateString].lunch = await getRandomMeal("lunch");
+        }
+        if (mealTimes.dinner) {
+          newMealPlan[dateString].dinner = await getRandomMeal("dinner");
+        }
       }
 
-      if (mealTimes.breakfast) {
-        newMealPlan[dateString].breakfast = await getRandomMeal('breakfast');
-      }
-      if (mealTimes.lunch) {
-        newMealPlan[dateString].lunch = await getRandomMeal('lunch');
-      }
-      if (mealTimes.dinner) {
-        newMealPlan[dateString].dinner = await getRandomMeal('dinner');
-      }
+      setMealPlan(newMealPlan);
+      await syncWithFirebase(newMealPlan);
+      setLoadingProgress(100); // Set to 100% when complete
+      setTimeout(() => {
+        clearInterval(progressInterval);
+        setIsModalVisible(false);
+        setIsGenerating(false);
+        setLoadingProgress(0);
+      }, 500); // Give a moment to see 100%
+    } catch (error) {
+      console.error("Error generating meal plan:", error);
+      clearInterval(progressInterval);
+      setLoadingProgress(0);
+      setIsGenerating(false);
+      alert("Failed to generate meal plan. Please try again.");
     }
-
-    setMealPlan(newMealPlan);
-    await syncWithFirebase(newMealPlan);
-    setIsModalVisible(false);
   };
 
   const getRandomMeal = async (mealType) => {
     const queries = {
-      breakfast: ['oatmeal', 'eggs', 'smoothie'],
-      lunch: ['salad', 'sandwich', 'soup'],
-      dinner: ['chicken', 'fish', 'vegetarian'],
+      breakfast: ["oatmeal", "eggs", "smoothie"],
+      lunch: ["salad", "sandwich", "soup"],
+      dinner: ["chicken", "fish", "vegetarian"],
     };
-    const randomQuery = queries[mealType][Math.floor(Math.random() * queries[mealType].length)];
+    const randomQuery =
+      queries[mealType][Math.floor(Math.random() * queries[mealType].length)];
     const recipes = await searchRecipes(randomQuery, mealType);
-    const selectedRecipe = recipes[Math.floor(Math.random() * recipes.length)].recipe;
+    const selectedRecipe =
+      recipes[Math.floor(Math.random() * recipes.length)].recipe;
     return {
       name: selectedRecipe.label,
       calories: Math.round(selectedRecipe.calories),
@@ -150,10 +220,10 @@ const MealPlanScreen = () => {
     try {
       const user = auth.currentUser;
       if (user) {
-        await firestore.collection('mealPlans').doc(user.uid).set(data);
+        await firestore.collection("mealPlans").doc(user.uid).set(data);
       }
     } catch (error) {
-      console.error('Error syncing meal plan with Firebase:', error);
+      console.error("Error syncing meal plan with Firebase:", error);
     }
   };
 
@@ -162,11 +232,14 @@ const MealPlanScreen = () => {
       const user = auth.currentUser;
       if (user) {
         const newList = [...shoppingList, { name: ingredient, checked: false }];
-        await firestore.collection('shoppingLists').doc(user.uid).set({ items: newList });
+        await firestore
+          .collection("shoppingLists")
+          .doc(user.uid)
+          .set({ items: newList });
         setShoppingList(newList);
       }
     } catch (error) {
-      console.error('Error adding to shopping list:', error);
+      console.error("Error adding to shopping list:", error);
     }
   };
 
@@ -174,12 +247,15 @@ const MealPlanScreen = () => {
     try {
       const user = auth.currentUser;
       if (user) {
-        const newList = shoppingList.filter(item => item.name !== ingredient);
-        await firestore.collection('shoppingLists').doc(user.uid).set({ items: newList });
+        const newList = shoppingList.filter((item) => item.name !== ingredient);
+        await firestore
+          .collection("shoppingLists")
+          .doc(user.uid)
+          .set({ items: newList });
         setShoppingList(newList);
       }
     } catch (error) {
-      console.error('Error removing from shopping list:', error);
+      console.error("Error removing from shopping list:", error);
     }
   };
 
@@ -189,29 +265,27 @@ const MealPlanScreen = () => {
   };
 
   const renderIngredientItem = (ingredient) => {
-    const inShoppingList = shoppingList.some(item => item.name === ingredient);
-    const inStock = stock.some(item => item.name === ingredient);
+    const inShoppingList = shoppingList.some(
+      (item) => item.name === ingredient
+    );
+    const inStock = stock.some((item) => item.name === ingredient);
 
     return (
       <List.Item
         key={ingredient}
         title={ingredient}
+        titleStyle={{ color: "#333" }}
         right={() => (
-          !inShoppingList && !inStock ? (
-            <IconButton 
-              icon="cart-plus"
-              onPress={() => addToShoppingList(ingredient)}
-              size={20}
-              color="#FFFFFF"
-            />
-          ) : (
-            <IconButton
-              icon="cart-remove"
-              onPress={() => removeFromShoppingList(ingredient)}
-              size={20}
-              color="#FFFFFF"
-            />
-          )
+          <IconButton
+            icon={inShoppingList || inStock ? "cart-remove" : "cart-plus"}
+            onPress={() =>
+              inShoppingList || inStock
+                ? removeFromShoppingList(ingredient)
+                : addToShoppingList(ingredient)
+            }
+            size={24}
+            color="#6200ea"
+          />
         )}
       />
     );
@@ -221,7 +295,7 @@ const MealPlanScreen = () => {
     if (!meal || !meal.ingredients) {
       return null;
     }
-  
+
     return (
       <Card style={styles.mealCard}>
         <Card.Content>
@@ -229,18 +303,15 @@ const MealPlanScreen = () => {
             <Title style={styles.mealTitle}>{mealType}</Title>
             <Text style={styles.calories}>{meal.calories} calories</Text>
           </View>
-          
+
           {meal.image ? (
-            <Image 
-              source={{ uri: meal.image }} 
-              style={styles.mealImage} 
-            />
+            <Image source={{ uri: meal.image }} style={styles.mealImage} />
           ) : (
             <View style={styles.placeholderImage}>
               <Text>No image available</Text>
             </View>
           )}
-          
+
           <View style={styles.mealDetails}>
             <Text style={styles.mealName}>{meal.name}</Text>
             <View style={styles.nutritionContainer}>
@@ -260,15 +331,15 @@ const MealPlanScreen = () => {
           </View>
         </Card.Content>
         <Card.Actions>
-          {/* Copy Button */}
-          <Button 
+          <Button
+            icon="plus-box-multiple"
             mode="outlined"
             onPress={() => handleCopyMeal(meal, mealType)}
           >
             Copy
           </Button>
-          <Button 
-            icon="eye" 
+          <Button
+            icon="eye"
             mode="contained"
             onPress={() => viewIngredients(meal)}
             style={styles.viewIngredientsButton}
@@ -283,7 +354,7 @@ const MealPlanScreen = () => {
   const handleCopyMeal = (meal, mealType) => {
     setCopiedMeal(meal);
     setCopiedMealType(mealType);
-    setIsPasteModalVisible(true); // Show paste modal
+    setIsPasteModalVisible(true);
   };
 
   const handlePasteMeal = () => {
@@ -295,17 +366,17 @@ const MealPlanScreen = () => {
         updatedMealPlan[dateKey] = {};
       }
 
-      // Paste the copied meal into the selected meal time
       updatedMealPlan[dateKey][selectedPasteMealTime] = copiedMeal;
 
       setMealPlan(updatedMealPlan);
       syncWithFirebase(updatedMealPlan);
-      alert(`Pasted into ${selectedPasteMealTime} on ${getDisplayDate(dateKey)}`);
+      alert(
+        `Pasted into ${selectedPasteMealTime} on ${getDisplayDate(dateKey)}`
+      );
 
-      // Close the modal
       setIsPasteModalVisible(false);
     } else {
-      alert('Please copy a meal and select a meal time.');
+      alert("Please copy a meal and select a meal time.");
     }
   };
 
@@ -313,40 +384,49 @@ const MealPlanScreen = () => {
     <ScrollView style={styles.container}>
       <Title style={styles.title}>Meal Plan</Title>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.daysContainer}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.daysContainer}
+      >
         {getDates().map((date) => (
           <TouchableOpacity
             key={date}
-            style={[styles.dayButton, date === selectedDate && styles.selectedDay]}
+            style={[
+              styles.dayButton,
+              date === selectedDate && styles.selectedDay,
+            ]}
             onPress={() => setSelectedDate(date)}
           >
-            <Paragraph style={date === selectedDate ? styles.selectedDayText : null}>
+            <Paragraph
+              style={date === selectedDate ? styles.selectedDayText : null}
+            >
               {getDisplayDate(date)}
             </Paragraph>
           </TouchableOpacity>
         ))}
       </ScrollView>
-      
+
       {mealPlan[selectedDate] && (
         <View>
-          {renderMealCard(mealPlan[selectedDate].breakfast, 'Breakfast')}
-          {renderMealCard(mealPlan[selectedDate].lunch, 'Lunch')}
-          {renderMealCard(mealPlan[selectedDate].dinner, 'Dinner')}
+          {renderMealCard(mealPlan[selectedDate].breakfast, "Breakfast")}
+          {renderMealCard(mealPlan[selectedDate].lunch, "Lunch")}
+          {renderMealCard(mealPlan[selectedDate].dinner, "Dinner")}
         </View>
       )}
 
-      <Button 
-        mode="contained" 
-        onPress={openGenerateMealPlanModal} 
+      <Button
+        mode="contained"
+        onPress={openGenerateMealPlanModal}
         style={styles.mainGenerateButton}
       >
         Generate New Meal Plan
       </Button>
 
       <Portal>
-        <Modal 
-          visible={isModalVisible} 
-          onDismiss={() => setIsModalVisible(false)} 
+        <Modal
+          visible={isModalVisible}
+          onDismiss={() => !isGenerating && setIsModalVisible(false)}
           contentContainerStyle={styles.modalContainer}
         >
           <Card style={styles.modalCard}>
@@ -355,10 +435,11 @@ const MealPlanScreen = () => {
 
               <View style={styles.modalSection}>
                 <Text style={styles.sectionLabel}>Start Date</Text>
-                <Button 
+                <Button
                   mode="outlined"
-                  onPress={() => setShowDatePicker(true)} 
+                  onPress={() => setShowDatePicker(true)}
                   style={styles.dateButton}
+                  disabled={isGenerating}
                 >
                   {getFormattedDate(startDate)}
                 </Button>
@@ -370,7 +451,9 @@ const MealPlanScreen = () => {
                     onChange={(event, date) => {
                       setShowDatePicker(false);
                       if (date) {
-                        const correctedDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+                        const correctedDate = new Date(
+                          date.getTime() - date.getTimezoneOffset() * 60000
+                        );
                         setStartDate(correctedDate);
                       }
                     }}
@@ -381,9 +464,12 @@ const MealPlanScreen = () => {
               <View style={styles.modalSection}>
                 <Text style={styles.sectionLabel}>Number of Days</Text>
                 <View style={styles.daysInputContainer}>
-                  <Button 
-                    mode="outlined" 
-                    onPress={() => setNumberOfDays(prev => Math.max(1, prev - 1))}
+                  <Button
+                    mode="outlined"
+                    onPress={() =>
+                      setNumberOfDays((prev) => Math.max(1, prev - 1))
+                    }
+                    disabled={isGenerating}
                   >
                     -
                   </Button>
@@ -391,13 +477,20 @@ const MealPlanScreen = () => {
                     mode="outlined"
                     keyboardType="numeric"
                     value={numberOfDays.toString()}
-                    onChangeText={(value) => setNumberOfDays(Math.max(1, Math.min(7, parseInt(value, 10) || 1)))}
+                    onChangeText={(value) =>
+                      setNumberOfDays(
+                        Math.max(1, Math.min(7, parseInt(value, 10) || 1))
+                      )
+                    }
                     style={styles.daysInput}
-                    editable={false} 
+                    editable={!isGenerating}
                   />
-                  <Button 
-                    mode="outlined" 
-                    onPress={() => setNumberOfDays(prev => Math.min(7, prev + 1))}
+                  <Button
+                    mode="outlined"
+                    onPress={() =>
+                      setNumberOfDays((prev) => Math.min(7, prev + 1))
+                    }
+                    disabled={isGenerating}
                   >
                     +
                   </Button>
@@ -407,35 +500,65 @@ const MealPlanScreen = () => {
               <View style={styles.modalSection}>
                 <Text style={styles.sectionLabel}>Meal Periods</Text>
                 <View style={styles.checkboxContainer}>
-                  <Checkbox.Item 
-                    label="Breakfast" 
-                    status={mealTimes.breakfast ? 'checked' : 'unchecked'} 
-                    onPress={() => setMealTimes({ ...mealTimes, breakfast: !mealTimes.breakfast })}
+                  <Checkbox.Item
+                    label="Breakfast"
+                    status={mealTimes.breakfast ? "checked" : "unchecked"}
+                    onPress={() =>
+                      !isGenerating &&
+                      setMealTimes({
+                        ...mealTimes,
+                        breakfast: !mealTimes.breakfast,
+                      })
+                    }
+                    disabled={isGenerating}
                   />
-                  <Checkbox.Item 
-                    label="Lunch" 
-                    status={mealTimes.lunch ? 'checked' : 'unchecked'} 
-                    onPress={() => setMealTimes({ ...mealTimes, lunch: !mealTimes.lunch })}
+                  <Checkbox.Item
+                    label="Lunch"
+                    status={mealTimes.lunch ? "checked" : "unchecked"}
+                    onPress={() =>
+                      !isGenerating &&
+                      setMealTimes({ ...mealTimes, lunch: !mealTimes.lunch })
+                    }
+                    disabled={isGenerating}
                   />
-                  <Checkbox.Item 
-                    label="Dinner" 
-                    status={mealTimes.dinner ? 'checked' : 'unchecked'} 
-                    onPress={() => setMealTimes({ ...mealTimes, dinner: !mealTimes.dinner })}
+                  <Checkbox.Item
+                    label="Dinner"
+                    status={mealTimes.dinner ? "checked" : "unchecked"}
+                    onPress={() =>
+                      !isGenerating &&
+                      setMealTimes({ ...mealTimes, dinner: !mealTimes.dinner })
+                    }
+                    disabled={isGenerating}
                   />
                 </View>
               </View>
 
               <View style={styles.modalButtonContainer}>
-                <Button 
-                  mode="contained" 
-                  onPress={handleGenerateMealPlan} 
-                  style={styles.modalGenerateButton}
+                <Button
+                  mode="contained"
+                  onPress={handleGenerateMealPlan}
+                  style={[
+                    styles.modalGenerateButton,
+                    isGenerating && styles.disabledButton,
+                  ]}
+                  disabled={isGenerating}
                 >
-                  Generate
+                  {isGenerating ? (
+                    <View style={styles.loadingContainer}>
+                      <ActivityIndicator size={20} color="#fff" />
+                      <Text style={styles.loadingText}>
+                        Generating... {loadingProgress}%
+                      </Text>
+                    </View>
+                  ) : (
+                    "Generate"
+                  )}
                 </Button>
-                <Button 
-                  mode="outlined" 
-                  onPress={() => setIsModalVisible(false)} 
+                <Button
+                  mode="outlined"
+                  onPress={() => setIsModalVisible(false)}
+                  disabled={isGenerating}
+                  style={styles.modalCancelButton}
                 >
                   Cancel
                 </Button>
@@ -445,21 +568,22 @@ const MealPlanScreen = () => {
         </Modal>
 
         {/* Paste Meal Modal */}
-        <Modal 
-          visible={isPasteModalVisible} 
-          onDismiss={() => setIsPasteModalVisible(false)} 
+        <Modal
+          visible={isPasteModalVisible}
+          onDismiss={() => setIsPasteModalVisible(false)}
           contentContainerStyle={styles.modalContainer}
         >
           <Card style={styles.modalCard}>
             <Card.Content>
               <Title>Copy Single Meal</Title>
 
-              {/* Date Picker */}
               <View style={styles.modalSection}>
-                <Text style={styles.sectionLabel}>Select Date to Paste Meal</Text>
-                <Button 
+                <Text style={styles.sectionLabel}>
+                  Select Date to Paste Meal
+                </Text>
+                <Button
                   mode="outlined"
-                  onPress={() => setShowDatePicker(true)} 
+                  onPress={() => setShowDatePicker(true)}
                   style={styles.dateButton}
                 >
                   {getFormattedDate(selectedPasteDate)}
@@ -477,11 +601,12 @@ const MealPlanScreen = () => {
                 )}
               </View>
 
-              {/* Meal Time Selection */}
               <View style={styles.modalSection}>
                 <Text style={styles.sectionLabel}>Select Meal Time</Text>
                 <RadioButton.Group
-                  onValueChange={(newValue) => setSelectedPasteMealTime(newValue)}
+                  onValueChange={(newValue) =>
+                    setSelectedPasteMealTime(newValue)
+                  }
                   value={selectedPasteMealTime}
                 >
                   <RadioButton.Item label="Breakfast" value="breakfast" />
@@ -490,15 +615,11 @@ const MealPlanScreen = () => {
                 </RadioButton.Group>
               </View>
 
-              {/* Confirm Button */}
-              <Button 
-                mode="contained" 
-                onPress={handlePasteMeal}
-              >
+              <Button mode="contained" onPress={handlePasteMeal}>
                 Paste Meal
               </Button>
-              <Button 
-                mode="outlined" 
+              <Button
+                mode="outlined"
                 onPress={() => setIsPasteModalVisible(false)}
               >
                 Cancel
@@ -507,17 +628,28 @@ const MealPlanScreen = () => {
           </Card>
         </Modal>
 
-        <Modal visible={isIngredientsModalVisible} onDismiss={() => setIsIngredientsModalVisible(false)} contentContainerStyle={styles.modalContainer}>
+        {/* Ingredients Modal */}
+        <Modal
+          visible={isIngredientsModalVisible}
+          onDismiss={() => setIsIngredientsModalVisible(false)}
+          contentContainerStyle={styles.modalContainer}
+        >
           <Card style={styles.modalCard}>
-            <Card.Content>
-              <Title>Ingredients</Title>
-              <ScrollView>
-                {selectedIngredients.map((ingredient) => renderIngredientItem(ingredient))}
+            <Card.Content style={styles.ingredientsContent}>
+              <Title style={styles.modalTitle}>Ingredients</Title>
+              <ScrollView style={styles.ingredientsList}>
+                {selectedIngredients.map((ingredient) =>
+                  renderIngredientItem(ingredient)
+                )}
               </ScrollView>
+              <Button
+                mode="contained"
+                onPress={() => setIsIngredientsModalVisible(false)}
+                style={styles.closeButton}
+              >
+                Close
+              </Button>
             </Card.Content>
-            <Card.Actions>
-              <Button onPress={() => setIsIngredientsModalVisible(false)}>Close</Button>
-            </Card.Actions>
           </Card>
         </Modal>
       </Portal>
@@ -529,47 +661,47 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: "#f9f9f9",
   },
   title: {
     fontSize: 26,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
     marginBottom: 20,
   },
   daysContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 20,
   },
   dayButton: {
     padding: 12,
     marginRight: 10,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: "#e0e0e0",
     borderRadius: 10,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 3,
   },
   selectedDay: {
-    backgroundColor: '#6200ea',
+    backgroundColor: "#6200ea",
   },
   selectedDayText: {
-    color: '#ffffff',  // Make text white when day is selected
+    color: "#ffffff",
   },
   mealCard: {
     marginBottom: 20,
     borderRadius: 15,
-    backgroundColor: '#fff',
-    shadowColor: '#000',
+    backgroundColor: "#fff",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 5,
     elevation: 3,
   },
   mealImage: {
-    width: '100%',
+    width: "100%",
     height: 200,
     borderRadius: 15,
     marginBottom: 10,
@@ -577,10 +709,10 @@ const styles = StyleSheet.create({
   mainGenerateButton: {
     marginTop: 20,
     marginBottom: 40,
-    backgroundColor: '#6200ea',
+    backgroundColor: "#6200ea",
     paddingVertical: 12,
     borderRadius: 10,
-    shadowColor: '#6200ea',
+    shadowColor: "#6200ea",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -588,141 +720,97 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     padding: 20,
-    backgroundColor: 'white',
-    borderRadius: 10,
-    marginHorizontal: 20,
+    backgroundColor: "transparent",
   },
   modalCard: {
     borderRadius: 15,
-    padding: 20,
-    backgroundColor: '#fff',
-  },
-  textInput: {
-    marginBottom: 20,
-  },
-  checkboxContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  listItem: {
-    marginVertical: 5,
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 10,
-  },
-  addIconPlus: {
-    margin: 0,
-    padding: 0,
-    backgroundColor: '#4caf50',
-    borderRadius: 20,
-  },
-  addIconMinus: {
-    margin: 0,
-    padding: 0,
-    backgroundColor: '#f44336',
-    borderRadius: 20,
-  },
-  selectedDateText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#333',
-  },
-  modalContainer: {
-    padding: 20,
-    backgroundColor: 'transparent',
-  },
-  modalCard: {
-    borderRadius: 15,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     elevation: 5,
   },
   modalTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 20,
-    textAlign: 'center',
+    textAlign: "center",
   },
   modalSection: {
     marginBottom: 20,
   },
   sectionLabel: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 8,
-    color: '#333',
+    color: "#333",
   },
   dateButton: {
-    width: '100%',
+    width: "100%",
     marginVertical: 5,
   },
+  daysInputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   daysInput: {
-    backgroundColor: '#fff',
+    width: 70,
+    textAlign: "center",
+    marginHorizontal: 10,
   },
   checkboxContainer: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
     borderRadius: 10,
     padding: 5,
   },
-  checkbox: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
   modalButtonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 20,
   },
   modalGenerateButton: {
     flex: 1,
     marginRight: 10,
-    backgroundColor: '#6200ea',
+    backgroundColor: "#6200ea",
   },
   modalCancelButton: {
     flex: 1,
     marginLeft: 10,
-    borderColor: '#6200ea',
   },
-  mealCard: {
-    marginBottom: 20,
-    borderRadius: 15,
-    backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 3,
+  loadingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  loadingText: {
+    color: "#fff",
+    marginLeft: 8,
+    fontSize: 16,
+  },
+  disabledButton: {
+    opacity: 0.7,
   },
   mealHeaderContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 10,
   },
   mealTitle: {
     fontSize: 22,
-    fontWeight: 'bold',
-    color: '#6200ea',
+    fontWeight: "bold",
+    color: "#6200ea",
   },
   calories: {
     fontSize: 16,
-    color: '#666',
-    fontWeight: '500',
-  },
-  mealImage: {
-    width: '100%',
-    height: 200,
-    borderRadius: 15,
-    marginBottom: 15,
+    color: "#666",
+    fontWeight: "500",
   },
   placeholderImage: {
-    width: '100%',
+    width: "100%",
     height: 200,
     borderRadius: 15,
-    backgroundColor: '#f0f0f0',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#f0f0f0",
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 15,
   },
   mealDetails: {
@@ -730,56 +818,64 @@ const styles = StyleSheet.create({
   },
   mealName: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 10,
-    color: '#333',
+    color: "#333",
   },
   nutritionContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    backgroundColor: '#f8f8f8',
+    flexDirection: "row",
+    justifyContent: "space-around",
+    backgroundColor: "#f8f8f8",
     borderRadius: 10,
     padding: 10,
   },
   nutritionItem: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   nutritionLabel: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginBottom: 4,
   },
   nutritionValue: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
   },
   viewIngredientsButton: {
-    marginTop: 10,
-    backgroundColor: '#6200ea',
+    backgroundColor: "#6200ea",
   },
-  daysInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+
+  loadingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: 150,
   },
-  daysInput: {
-    width: 70,
-    textAlign: 'center',
-    marginHorizontal: 10,
+  loadingText: {
+    color: "#fff",
+    marginLeft: 8,
+    fontSize: 16,
+    minWidth: 120,
   },
-  incrementButton: {
-    paddingHorizontal: 5,
-    justifyContent: 'center',
+  modalCard: {
+    borderRadius: 15,
+    backgroundColor: "#fff",
+    elevation: 5,
+    maxHeight: "90%", // Limit modal height
   },
-  decrementButton: {
-    paddingHorizontal: 5,
-    justifyContent: 'center',
+  ingredientsContent: {
+    paddingBottom: 10,
   },
-  copyButton: {
-    marginTop: 10,
-    backgroundColor: '#6200ea',
+  ingredientsList: {
+    maxHeight: 400,
+    marginBottom: 16,
+  },
+  closeButton: {
+    marginTop: 4,
+    marginBottom: 16,
+    backgroundColor: "#6200ea",
   },
 });
 
 export default MealPlanScreen;
-
