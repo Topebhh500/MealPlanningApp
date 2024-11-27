@@ -1,18 +1,27 @@
 // firebase/config.js
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/auth';
-import 'firebase/compat/firestore';
-import 'firebase/compat/storage';  // Add this line
+import firebase from "firebase/compat/app";
+import "firebase/compat/auth";
+import "firebase/compat/firestore";
+import "firebase/compat/storage";
+import {
+  FIREBASE_API_KEY,
+  FIREBASE_AUTH_DOMAIN,
+  FIREBASE_PROJECT_ID,
+  FIREBASE_STORAGE_BUCKET,
+  FIREBASE_MESSAGING_SENDER_ID,
+  FIREBASE_APP_ID,
+  FIREBASE_MEASUREMENT_ID,
+} from "@env";
 
 // Your Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyC0_EvTlSrp4z12DUgu8J5NQsJXqiOsRcc",
-  authDomain: "my-meal-planning-b09b8.firebaseapp.com",
-  projectId: "my-meal-planning-b09b8",
-  storageBucket: "my-meal-planning-b09b8.appspot.com",
-  messagingSenderId: "926443553913",
-  appId: "1:926443553913:web:0b2c37f0746a65857100a8",
-  measurementId: "G-XEJ0MZ0TKW"
+  apiKey: FIREBASE_API_KEY,
+  authDomain: FIREBASE_AUTH_DOMAIN,
+  projectId: FIREBASE_PROJECT_ID,
+  storageBucket: FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: FIREBASE_MESSAGING_SENDER_ID,
+  appId: FIREBASE_APP_ID,
+  measurementId: FIREBASE_MEASUREMENT_ID,
 };
 
 // Initialize Firebase
@@ -22,6 +31,6 @@ if (!firebase.apps.length) {
 
 const auth = firebase.auth();
 const firestore = firebase.firestore();
-const storage = firebase.storage();  // Add this line
+const storage = firebase.storage();
 
-export { auth, firestore, storage };  // Export storage
+export { auth, firestore, storage };

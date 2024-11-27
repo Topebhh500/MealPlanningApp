@@ -73,20 +73,22 @@ expo start
 ## 🔑 Environment Variables
 
 ```env
-FIREBASE_API_KEY=your_key
-FIREBASE_APP_ID=your_id
-GOOGLE_PLACES_API_KEY=your_key
-EDAMAM_APP_ID=your_id
-EDAMAM_API_KEY=your_key
+# Firebase Configuration
+FIREBASE_API_KEY=your_firebase_api_key
+FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain
+FIREBASE_PROJECT_ID=your_firebase_project_id
+FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
+FIREBASE_MESSAGING_SENDER_ID=your_firebase_messaging_sender_id
+FIREBASE_APP_ID=your_firebase_app_id
+FIREBASE_MEASUREMENT_ID=your_firebase_measurement_id
+
+# Google Places API
+GOOGLE_PLACES_API_KEY=your_google_place_api_key
+
+# Edamam Recipe API
+EDAMAM_APP_ID=your_firebase_app_id
+EDAMAM_API_KEY=your_edamam_api_key
 ```
-
-## 🤝 Contributing
-
-Contributions welcome! Check our [Contributing Guidelines](CONTRIBUTING.md).
-
-## 📄 License
-
-MIT License - See [LICENSE](LICENSE) file
 
 ## 👨‍💻 Author
 
@@ -94,10 +96,6 @@ MIT License - See [LICENSE](LICENSE) file
 
 - GitHub: [@Topebhh500](https://github.com/Topebhh500)
 - LinkedIn: [Your LinkedIn]
-
-## 🌟 Support
-
-Star this repo if you found it helpful!
 
 ---
 

@@ -10,8 +10,9 @@ import {
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
+import { GOOGLE_PLACES_API_KEY } from "@env";
 
-const GOOGLE_PLACES_API_KEY = "AIzaSyDy2I-tqTGEzvZJG9kv_PW0JEwGkwajifU";
+const GOOGLE_API_KEY = GOOGLE_PLACES_API_KEY;
 
 const NearbyStoresScreen = () => {
   const [location, setLocation] = useState(null);
@@ -40,7 +41,7 @@ const NearbyStoresScreen = () => {
 
       // Fetch nearby restaurants using Google Places API
       const response = await fetch(
-        `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${location.coords.latitude},${location.coords.longitude}&radius=1500&type=supermarket&key=${GOOGLE_PLACES_API_KEY}`
+        `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${location.coords.latitude},${location.coords.longitude}&radius=1500&type=supermarket&key=${GOOGLE_API_KEY}`
       );
       const data = await response.json();
 
