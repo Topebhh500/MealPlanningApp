@@ -231,15 +231,33 @@ const MealPlanScreen = () => {
     try {
       const user = auth.currentUser;
       if (user) {
+        // Check if item already exists
+        const exists = shoppingList.some((item) => item.name === ingredient);
+        if (exists) {
+          Alert.alert(
+            "Already in List",
+            "This item is already in your shopping list"
+          );
+          return;
+        }
+
+        // Create new item
         const newList = [...shoppingList, { name: ingredient, checked: false }];
-        await firestore
-          .collection("shoppingLists")
-          .doc(user.uid)
-          .set({ items: newList });
+
+        // Save to Firebase
+        await firestore.collection("shoppingLists").doc(user.uid).set({
+          items: newList,
+        });
+
+        // Update local state
         setShoppingList(newList);
+
+        // Show success message
+        Alert.alert("Success", "Item added to shopping list");
       }
     } catch (error) {
       console.error("Error adding to shopping list:", error);
+      Alert.alert("Error", "Failed to add item to shopping list");
     }
   };
 
@@ -774,6 +792,7 @@ const styles = StyleSheet.create({
   modalCancelButton: {
     flex: 1,
     marginLeft: 10,
+    backgroundColor: "#fff",
   },
   loadingContainer: {
     flexDirection: "row",

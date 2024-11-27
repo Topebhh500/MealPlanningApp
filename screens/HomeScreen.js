@@ -227,7 +227,7 @@ const HomeScreen = ({ navigation }) => {
             style={styles.avatar}
           />
           <View style={styles.headerText}>
-            <Text style={styles.welcomeText}>Welcome back,</Text>
+            <Text style={styles.welcomeText}>Tervetuloa!</Text>
             <Title style={styles.title}>{userName}!</Title>
           </View>
         </View>
