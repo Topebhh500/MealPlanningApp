@@ -33,7 +33,7 @@ A React Native mobile application streamlining meal planning, recipe discovery, 
 ## 📱 Screenshots
 
 <div align="center">
-  <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+  <div style="display: flex; flex-wrap: wrap; gap: 1%; justify-content: center;">
     <img src="screenshots/1.jpg" width="24%" alt="Login Screen"/>
     <img src="screenshots/2.jpg" width="24%" alt="Home Screen"/>
     <img src="screenshots/3.jpg" width="24%" alt="Meal Plan"/>
