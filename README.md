@@ -95,7 +95,7 @@ EDAMAM_API_KEY=your_edamam_api_key
 **Topebhh500**
 
 - GitHub: [@Topebhh500](https://github.com/Topebhh500)
-- LinkedIn: [Your LinkedIn]
+- LinkedIn: [https://www.linkedin.com/in/ajayi-temitope-72927733/](https://www.linkedin.com/in/ajayi-temitope-72927733/)
 
 ---
 
