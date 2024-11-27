@@ -32,20 +32,18 @@ A React Native mobile application streamlining meal planning, recipe discovery, 
 
 ## 📱 Screenshots
 
-<table>
-  <tr>
-    <td><img src="screenshots/1.jpg" width="24%"/></td>
-    <td><img src="screenshots/2.jpg" width="24%"/></td>
-    <td><img src="screenshots/3.jpg" width="24%"/></td>
-    <td><img src="screenshots/4.jpg" width="24%"/></td>
-  </tr>
-  <tr>
-    <td><img src="screenshots/5.jpg" width="24%"/></td>
-    <td><img src="screenshots/6.jpg" width="24%"/></td>
-    <td><img src="screenshots/7.jpg" width="24%"/></td>
-    <td><img src="screenshots/8.jpg" width="24%"/></td>
-  </tr>
-</table>
+<div align="center">
+  <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+    <img src="screenshots/1.jpg" width="24%" alt="Login Screen"/>
+    <img src="screenshots/2.jpg" width="24%" alt="Home Screen"/>
+    <img src="screenshots/3.jpg" width="24%" alt="Meal Plan"/>
+    <img src="screenshots/4.jpg" width="24%" alt="Generate Meal"/>
+    <img src="screenshots/5.jpg" width="24%" alt="Shopping List"/>
+    <img src="screenshots/6.jpg" width="24%" alt="Nearby Stores"/>
+    <img src="screenshots/7.jpg" width="24%" alt="Profile Page"/>
+    <img src="screenshots/8.jpg" width="24%" alt="Logout Option"/>
+  </div>
+</div>
 
 ## 🚀 Quick Start
 
