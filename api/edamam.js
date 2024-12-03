@@ -1,8 +1,8 @@
 import axios from "axios";
-import { EDAMAM_APP_ID, EDAMAM_API_KEY } from "@env";
+//import { EDAMAM_APP_ID, EDAMAM_API_KEY } from "@env";
 
-const APP_ID = EDAMAM_APP_ID;
-const APP_KEY = EDAMAM_API_KEY;
+const APP_ID = process.env.EDAMAM_APP_ID;
+const APP_KEY = process.env.EDAMAM_API_KEY;
 const BASE_URL = "https://api.edamam.com/api/recipes/v2";
 
 export const searchRecipes = async (query, mealType) => {
