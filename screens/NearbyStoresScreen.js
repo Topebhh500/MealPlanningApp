@@ -1,18 +1,10 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  StyleSheet,
-  Dimensions,
-  Text,
-  Linking,
-  FlatList,
-  TouchableOpacity,
-} from "react-native";
+import { View, Text, Linking, FlatList, TouchableOpacity } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
-import { GOOGLE_PLACES_API_KEY } from "@env";
+import styles from "../styles/NearbyStoresStyle";
 
-const GOOGLE_API_KEY = GOOGLE_PLACES_API_KEY;
+const GOOGLE_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
 
 const NearbyStoresScreen = () => {
   const [location, setLocation] = useState(null);
@@ -169,48 +161,5 @@ const NearbyStoresScreen = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  addressContainer: {
-    padding: 10,
-    backgroundColor: "#6200ea",
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
-  },
-  addressText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#fff",
-  },
-  map: {
-    flex: 2, // MapView takes 2/3 of the screen height
-    width: Dimensions.get("window").width,
-  },
-  storeList: {
-    flex: 1, // FlatList takes 1/3 of the screen height
-    backgroundColor: "#fff",
-  },
-  storeItem: {
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
-  },
-  storeName: {
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  storeDistance: {
-    color: "#555",
-    marginTop: 5,
-    fontSize: 14,
-  },
-  storeAddress: {
-    color: "#777",
-    marginTop: 5,
-  },
-});
 
 export default NearbyStoresScreen;
