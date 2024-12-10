@@ -90,12 +90,23 @@ EDAMAM_APP_ID=your_firebase_app_id
 EDAMAM_API_KEY=your_edamam_api_key
 ```
 
-## 👨‍💻 Author
+## 📜 License
 
-**Topebhh500**
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 👤 Author
+
+**Ajayi Temitope**
 
 - GitHub: [@Topebhh500](https://github.com/Topebhh500)
-- LinkedIn: [https://www.linkedin.com/in/ajayi-temitope-72927733/](https://www.linkedin.com/in/ajayi-temitope-72927733/)
+- LinkedIn: [Ajayi Temitope](https://www.linkedin.com/in/ajayi-temitope-72927733/)
+
+## 🙏 Acknowledgments
+
+- [Edamam](https://www.edamam.com/) for their comprehensive recipe API
+- [Firebase](https://firebase.google.com/) for backend services
+- [Expo](https://expo.dev/) for the development framework
+- [React Native Paper](https://callstack.github.io/react-native-paper/) for UI components
 
 ---
 

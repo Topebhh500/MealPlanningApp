@@ -50,6 +50,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
     elevation: 4,
     borderRadius: 15,
+    backgroundColor: "#ffffff",
   },
   statContent: {
     alignItems: "center",
@@ -78,8 +79,9 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   preferencesContainer: {
-    backgroundColor: "#f8f8f8",
     borderRadius: 10,
+    elevation: 2,
+    backgroundColor: "#fff",
     padding: 15,
   },
   preferenceItem: {
